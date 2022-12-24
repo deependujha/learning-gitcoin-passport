@@ -1,6 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
-}
+	reactStrictMode: true,
+	webpack: function (config, { isServer }) {
+		// Your other webpack configs
 
-module.exports = nextConfig
+		config.experiments = { ...config.experiments, asyncWebAssembly: true };
+
+		return config;
+	},
+};
+
+module.exports = nextConfig;

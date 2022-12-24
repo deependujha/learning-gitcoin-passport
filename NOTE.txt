@@ -1,0 +1,3 @@
+same account can be used by multiple addresses, but they all will have same hash.
+
+passport -> stamp -> [index] -> credentialSubject -> hash

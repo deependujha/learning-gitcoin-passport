@@ -4,30 +4,28 @@ import { Inter } from '@next/font/google';
 import styles from '../styles/Home.module.css';
 
 // add to your project as a module
-import { PassportReader } from '@gitcoinco/passport-sdk-reader';
+import { PassportVerifier } from '@gitcoinco/passport-sdk-verifier';
 // import {PassportVerifier} from '@gitcoinco/passport-sdk-verifier';
 import { useState } from 'react';
 
 const inter = Inter({ subsets: ['latin'] });
 
-export default function Home() {
+export default function MyVerifier() {
+	const [addressInput, setAddressInput] = useState('');
 	const [passport, setPassport] = useState({});
 
 	// create a new instance pointing at Gitcoins mainnet Ceramic node
-	const reader = new PassportReader(
-		'https://ceramic.passport-iam.gitcoin.co',
-		'1'
-	);
+	const verifier = new PassportVerifier();
 
-	const btnClick = async () => {
+	const handleSubmit = (event) => {
 		console.log('button clicked');
-		// read a Passport for any Ethereum Address
-		const myPassport = await reader.getPassport(
-			'0x31B0F3eeD8cAFA7D09C862b7779AAc826F3c4468'
-		);
-		console.log('printing passport: ', myPassport);
-		setPassport(myPassport);
+		event.preventDefault();
+		verifier.verifyPassport(addressInput).then((result) => {
+			console.log('result is: ', result);
+			setPassport(result);
+		});
 	};
+
 	return (
 		<>
 			<Head>
@@ -36,10 +34,24 @@ export default function Home() {
 				<meta name="viewport" content="width=device-width, initial-scale=1" />
 				<link rel="icon" href="/favicon.ico" />
 			</Head>
-			<main className={styles.main}>
-				<button onClick={btnClick}>Click me</button>
-
-				<div>
+			<div className="App">
+				<header className="App-header">
+					{/* <img src={logo} className="App-logo" alt="logo" /> */}
+					<h1>Passport Verifier SDK</h1>
+					<p>Enter Wallet Address to verify passport</p>
+					<form>
+						<input
+							type="text"
+							name="inputAddress"
+							style={{ padding: 12 }}
+							// @ts-ignore
+							onChange={(e) => setAddressInput(e.target.value)}
+							value={addressInput}
+						/>
+						<button style={{ padding: 12 }} onClick={handleSubmit}>
+							Enter
+						</button>
+					</form>
 					{passport && (
 						<div
 							style={{
@@ -49,32 +61,7 @@ export default function Home() {
 								textAlign: 'left',
 							}}
 						>
-							<h1 style={{ textAlign: 'center' }}>Passport Data</h1>
-							{
-								// @ts-ignore
-								passport?.expiryDate && (
-									<p>
-										Expiry Date:{' '}
-										{
-											// @ts-ignore
-											passport?.expiryDate
-										}
-									</p>
-								)
-							}
-							{
-								// @ts-ignore
-								passport?.issuanceDate && (
-									<p>
-										Issuance Date:{' '}
-										{
-											// @ts-ignore
-											passport?.issuanceDate
-										}
-									</p>
-								)
-							}
-
+							<h1 style={{ textAlign: 'center' }}>Passport Stamps</h1>
 							{
 								// @ts-ignore
 								passport?.stamps?.length > 0 && (
@@ -84,7 +71,11 @@ export default function Home() {
 											{
 												// @ts-ignore
 												passport?.stamps?.map((item, index) => {
-													return <li key={index}>{item.provider}</li>;
+													return (
+														<li key={index}>
+															{item.provider}: {item.verified ? '✅' : '❌'}
+														</li>
+													);
 												})
 											}
 										</ul>
@@ -93,8 +84,8 @@ export default function Home() {
 							}
 						</div>
 					)}
-				</div>
-			</main>
+				</header>
+			</div>
 		</>
 	);
 }
